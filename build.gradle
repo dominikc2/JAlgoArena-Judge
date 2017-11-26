@@ -1,6 +1,7 @@
 buildscript {
     ext.kotlin_version = '1.0.6'
     ext.spring_version = '1.5.1.RELEASE'
+    ext.jruby_version = '9.1.14.0'
 
     repositories {
         jcenter()
@@ -49,6 +50,7 @@ dependencies {
             "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version",
             "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version",
             "org.jetbrains.kotlin:kotlin-compiler:$kotlin_version",
+            "org.jruby:jruby-complete:$jruby_version",
             "io.springfox:springfox-swagger2:2.7.0",
             "io.springfox:springfox-swagger-ui:2.7.0"
 
