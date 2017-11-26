@@ -63,7 +63,6 @@ class JRubyCompiler : JvmCompiler {
         val runtime = Runtime.getRuntime()
         val process = runtime.exec(command)
         process.waitFor(10, TimeUnit.SECONDS)
-        process.errorStream.transferTo(System.err)
 
         return processToExitCode(process)
     }

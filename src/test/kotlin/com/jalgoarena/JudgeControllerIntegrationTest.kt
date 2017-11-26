@@ -113,6 +113,15 @@ class JudgeControllerIntegrationTest {
     }
 
     @Test
+    @Parameters("fib, Fib")
+    fun judgesJRubyCorrectSolution(problemId: String, solutionId: String) {
+        val sourceCode = Resources.toString(Resources.getResource(solutionId + ".rb"), Charsets.UTF_8)
+        val result = judgeController.judge(problemId, JudgeRequest(sourceCode, "0-0", "jruby"))
+
+        assertThat(result.statusCode).isEqualTo(StatusCode.ACCEPTED.toString())
+    }
+
+    @Test
     fun returnsFormattedMessageIfCompilationError() {
 
         val skeletonCode = problemsController.problem("fib").skeletonCode!!["java"]!!

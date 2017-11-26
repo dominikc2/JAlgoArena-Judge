@@ -140,6 +140,7 @@ open class JvmJudgeEngine(
 
     private fun findClassName(language: String, sourceCode: String) = when (language) {
         "kotlin" -> sourceCode.findKotlinClassName()
+        "jruby" -> sourceCode.findJRubyClassName()
         else -> sourceCode.findJavaClassName()
     }
 

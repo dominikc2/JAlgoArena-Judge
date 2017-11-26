@@ -10,6 +10,7 @@ import com.jalgoarena.codegeneration.KotlinCodeGenerator
 import com.jalgoarena.compile.JvmCompiler
 import com.jalgoarena.compile.KotlinCompiler
 import com.jalgoarena.compile.InMemoryJavaCompiler
+import com.jalgoarena.compile.JRubyCompiler
 import com.jalgoarena.type.ListNode
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -41,6 +42,7 @@ open class ApplicationConfiguration {
     @Bean
     open fun codeCompilers(): List<JvmCompiler> = listOf(
             InMemoryJavaCompiler(),
-            KotlinCompiler()
+            KotlinCompiler(),
+            JRubyCompiler()
     )
 }
