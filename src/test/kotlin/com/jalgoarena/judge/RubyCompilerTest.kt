@@ -1,15 +1,15 @@
 package com.jalgoarena.judge
 
-import com.jalgoarena.compile.JRubyCompiler
+import com.jalgoarena.compile.RubyCompiler
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
-class JRubyCompilerTest {
+class RubyCompilerTest {
 
     @Test
     fun compileAndRunStaticMethod() {
 
-        val (instance, method) = JRubyCompiler().compileMethod(
+        val (instance, method) = RubyCompiler().compileMethod(
                 "Solution", "greeting", 1, HELLO_WORLD_SOURCE_CODE
         )
 

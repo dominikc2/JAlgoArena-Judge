@@ -65,7 +65,6 @@ class ProblemsControllerSpec {
         open fun kotlinCodeGenerator() = KotlinCodeGenerator()
         @Bean
         open fun javaCodeGenerator() = JavaCodeGenerator()
-
     }
     //language=JSON
     private val PROBLEM_AS_JSON = """{

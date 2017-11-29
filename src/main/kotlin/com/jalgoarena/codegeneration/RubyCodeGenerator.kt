@@ -2,8 +2,8 @@ package com.jalgoarena.codegeneration
 
 import com.jalgoarena.domain.Function
 
-class JRubyCodeGenerator : JvmCodeGeneration {
-    override fun programmingLanguage() = "kotlin"
+class RubyCodeGenerator : JvmCodeGeneration {
+    override fun programmingLanguage() = "ruby"
 
     override fun generateEmptyFunction(function: Function) = """class Solution
 ${functionComment(function)}

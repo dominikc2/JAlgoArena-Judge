@@ -7,8 +7,8 @@ import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class JRubyCompiler : JvmCompiler {
-    override fun programmingLanguage() = "jruby"
+class RubyCompiler : JvmCompiler {
+    override fun programmingLanguage() = "ruby"
 
     override fun run(className: String, source: String): MutableMap<String, ByteArray?> {
 
