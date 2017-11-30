@@ -27,7 +27,7 @@ class RubyCompiler : JvmCompiler {
                 else -> throw CompileErrorException(errMessageBytes.toString("utf-8"))
             }
         } finally {
-            tmpDir.deleteRecursively()
+            //tmpDir.deleteRecursively()
             System.setErr(origErr)
         }
     }
@@ -60,12 +60,14 @@ class RubyCompiler : JvmCompiler {
                 "-S", "jrubyc",
                 sourceFile.name,
                 "--java",
-                "-t", "out",
-                "-classpath", classPath
+                "-t", "out"
         ).directory(out.parentFile)
 
-        var process = processBuilder.start()
+        var process = processBuilder.inheritIO().start()
+
         process.waitFor(10, TimeUnit.SECONDS)
+
+        System.out.println("COMMAND STATUS" + process.exitValue())
 
         out.listFiles().filter {
             it.absolutePath.endsWith(".java")
@@ -75,9 +77,11 @@ class RubyCompiler : JvmCompiler {
                     "-d", out.absolutePath,
                     "-cp", classPath,
                     it.absolutePath
-            ).start()
+            ).inheritIO().start()
 
             process.waitFor(10, TimeUnit.SECONDS)
+
+            System.out.println("COMMAND STATUS" + process.exitValue())
             if (!process.exitValue().equals(0)) {
                 return processToExitCode(process)
             }
