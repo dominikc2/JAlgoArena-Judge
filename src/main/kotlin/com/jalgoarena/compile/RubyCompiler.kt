@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.cli.common.ExitCode
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintStream
-import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -47,22 +46,42 @@ class RubyCompiler : JvmCompiler {
     }
 
     private fun compileAndReturnExitCode(out: File, sourceFile: File): ExitCode {
-        val home = System.getProperty("user.home")
+        val jRubyJar = File("lib/jruby-complete-9.1.14.0.jar")
 
-        val command = listOf(
-                Paths.get(home, ".rbenv", "shims", "jrubyc").toString(),
-                sourceFile.absolutePath,
-                "--javac",
-                "-t", out.absolutePath,
-                "-classpath", listOf(
+        val classPath = listOf(
+                jRubyJar,
                 File("build/classes/main").absolutePath,
                 File("build/resources/main").absolutePath
         ).joinToString(File.pathSeparator)
-        ).joinToString(" ")
 
-        val runtime = Runtime.getRuntime()
-        val process = runtime.exec(command)
+        var processBuilder = ProcessBuilder(
+                "java",
+                "-jar", jRubyJar.absolutePath,
+                "-S", "jrubyc",
+                sourceFile.name,
+                "--java",
+                "-t", "out",
+                "-classpath", classPath
+        ).directory(out.parentFile)
+
+        var process = processBuilder.start()
         process.waitFor(10, TimeUnit.SECONDS)
+
+        out.listFiles().filter {
+            it.absolutePath.endsWith(".java")
+        }.forEach {
+            val process = ProcessBuilder(
+                    "javac",
+                    "-d", out.absolutePath,
+                    "-cp", classPath,
+                    it.absolutePath
+            ).start()
+
+            process.waitFor(10, TimeUnit.SECONDS)
+            if (!process.exitValue().equals(0)) {
+                return processToExitCode(process)
+            }
+        }
 
         return processToExitCode(process)
     }
