@@ -56,9 +56,16 @@ class RubyCompiler : JvmCompiler {
 
 
         var processBuilder = ProcessBuilder(
-                File("bin/compile.sh").absolutePath,
-                sourceFile.name
+                "java",
+                "-jar", jRubyJar.absolutePath,
+                "-S", "jrubyc",
+                sourceFile.name,
+                "--java",
+                "-t", "out"
         ).directory(out.parentFile)
+
+        processBuilder.environment().set("JAVA_TOOL_OPTIONS", "-Xmx32m -Xss512k -Dfile.encoding=UTF-8")
+
 
         var process = processBuilder.inheritIO().start()
 
@@ -68,23 +75,29 @@ class RubyCompiler : JvmCompiler {
 
         System.out.println("COMMAND STATUS" + process.exitValue())
 
-//        out.listFiles().filter {
-//            it.absolutePath.endsWith(".java")
-//        }.forEach {
-//            val process = ProcessBuilder(
-//                    "javac",
-//                    "-d", out.absolutePath,
-//                    "-cp", classPath,
-//                    it.absolutePath
-//            ).inheritIO().start()
-//
-//            process.waitFor(60, TimeUnit.SECONDS)
-//
-//            System.out.println("COMMAND STATUS" + process.exitValue())
-//            if (!process.exitValue().equals(0)) {
-//                return processToExitCode(process)
-//            }
-//        }
+        out.listFiles().filter {
+            it.absolutePath.endsWith(".java")
+        }.forEach {
+            val compileProcessBuilder = ProcessBuilder(
+                    "javac",
+                    "-d", out.absolutePath,
+                    "-cp", classPath,
+                    it.absolutePath
+            )
+
+
+
+            compileProcessBuilder.inheritIO()
+            compileProcessBuilder.environment().set("JAVA_TOOL_OPTIONS", "-Xmx32m -Xss512k -Dfile.encoding=UTF-8")
+
+            var compileProcess = compileProcessBuilder.start()
+            compileProcess.waitFor(60, TimeUnit.SECONDS)
+
+            System.out.println("COMMAND STATUS" + compileProcess.exitValue())
+            if (compileProcess.exitValue() != 0) {
+                return processToExitCode(compileProcess)
+            }
+        }
 
         return processToExitCode(process)
     }
