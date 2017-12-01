@@ -54,38 +54,37 @@ class RubyCompiler : JvmCompiler {
                 File("build/resources/main").absolutePath
         ).joinToString(File.pathSeparator)
 
+
         var processBuilder = ProcessBuilder(
-                "java",
-                "-jar", jRubyJar.absolutePath,
-                "-S", "jrubyc",
-                sourceFile.name,
-                "--java",
-                "-t", "out"
+                File("bin/compile.sh").absolutePath,
+                sourceFile.name
         ).directory(out.parentFile)
 
         var process = processBuilder.inheritIO().start()
 
-        process.waitFor(10, TimeUnit.SECONDS)
+        process.waitFor(60, TimeUnit.SECONDS)
+        process.destroyForcibly()
+
 
         System.out.println("COMMAND STATUS" + process.exitValue())
 
-        out.listFiles().filter {
-            it.absolutePath.endsWith(".java")
-        }.forEach {
-            val process = ProcessBuilder(
-                    "javac",
-                    "-d", out.absolutePath,
-                    "-cp", classPath,
-                    it.absolutePath
-            ).inheritIO().start()
-
-            process.waitFor(10, TimeUnit.SECONDS)
-
-            System.out.println("COMMAND STATUS" + process.exitValue())
-            if (!process.exitValue().equals(0)) {
-                return processToExitCode(process)
-            }
-        }
+//        out.listFiles().filter {
+//            it.absolutePath.endsWith(".java")
+//        }.forEach {
+//            val process = ProcessBuilder(
+//                    "javac",
+//                    "-d", out.absolutePath,
+//                    "-cp", classPath,
+//                    it.absolutePath
+//            ).inheritIO().start()
+//
+//            process.waitFor(60, TimeUnit.SECONDS)
+//
+//            System.out.println("COMMAND STATUS" + process.exitValue())
+//            if (!process.exitValue().equals(0)) {
+//                return processToExitCode(process)
+//            }
+//        }
 
         return processToExitCode(process)
     }
