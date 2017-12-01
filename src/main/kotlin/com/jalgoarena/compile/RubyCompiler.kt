@@ -72,9 +72,6 @@ class RubyCompiler : JvmCompiler {
         process.waitFor(60, TimeUnit.SECONDS)
         process.destroyForcibly()
 
-
-        System.out.println("COMMAND STATUS" + process.exitValue())
-
         out.listFiles().filter {
             it.absolutePath.endsWith(".java")
         }.forEach {
@@ -85,15 +82,12 @@ class RubyCompiler : JvmCompiler {
                     it.absolutePath
             )
 
-
-
             compileProcessBuilder.inheritIO()
             compileProcessBuilder.environment().set("JAVA_TOOL_OPTIONS", "-Xmx32m -Xss512k -Dfile.encoding=UTF-8")
 
             var compileProcess = compileProcessBuilder.start()
             compileProcess.waitFor(60, TimeUnit.SECONDS)
 
-            System.out.println("COMMAND STATUS" + compileProcess.exitValue())
             if (compileProcess.exitValue() != 0) {
                 return processToExitCode(compileProcess)
             }

@@ -120,7 +120,7 @@ class JudgeControllerIntegrationTest {
     }
 
     @Test
-    @Parameters("fib, Fib")
+    @Parameters("2-sum, TwoSum", "fib, FibFast", "binary-search, BinarySearch", "height-binary-tree, HeightOfBinaryTree", "sum-binary-tree, SumBinaryTree", "insert-stars, InsertStars", "transpose-matrix, TransposeMatrix")
     fun judgesRubyCorrectSolution(problemId: String, solutionId: String) {
         val sourceCode = Resources.toString(Resources.getResource(solutionId + ".rb"), Charsets.UTF_8)
         val result = judgeController.judge(problemId, JudgeRequest(sourceCode, "0-0", "ruby"))
