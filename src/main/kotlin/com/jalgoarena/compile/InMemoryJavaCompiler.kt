@@ -7,7 +7,7 @@ import java.io.IOException
 import java.nio.CharBuffer
 import javax.tools.*
 
-class InMemoryJavaCompiler : JvmCompiler {
+open class InMemoryJavaCompiler : JvmCompiler {
 
     private val LOG = LoggerFactory.getLogger(this.javaClass)
 
@@ -66,7 +66,11 @@ class InMemoryJavaCompiler : JvmCompiler {
     private fun javacOptions(): List<String> {
         return listOf(
                 "-nowarn",
-                "-classpath", File("build/classes/main").absolutePath
+                "-classpath",
+                listOf(
+                        File("lib/jruby-complete-9.1.14.0.jar"),
+                        File("build/classes/main").absolutePath
+                ).joinToString(File.pathSeparator)
         )
     }
 

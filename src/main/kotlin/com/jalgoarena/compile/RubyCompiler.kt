@@ -22,14 +22,30 @@ class RubyCompiler : JvmCompiler {
             val errMessageBytes = ByteArrayOutputStream()
             System.setErr(PrintStream(errMessageBytes))
 
+            System.out.println(Date())
             when (compileAndReturnExitCode(out, sourceFile)) {
-                ExitCode.OK -> return readClassBytes(out)
+                ExitCode.OK -> return runWithJavaCompiler(className, out)
                 else -> throw CompileErrorException(errMessageBytes.toString("utf-8"))
             }
         } finally {
             //tmpDir.deleteRecursively()
             System.setErr(origErr)
         }
+    }
+
+    private fun runWithJavaCompiler(className: String, out: File): MutableMap<String, ByteArray?> {
+        System.out.println(Date())
+        val compiler = InMemoryJavaCompiler()
+
+
+        val javaSourceFile = out.listFiles()
+                .filter { it.absolutePath.endsWith(".java") }
+                .first()
+
+
+        val source = File(out, javaSourceFile.name).readText()
+
+        return compiler.run(className, source)
     }
 
     private fun readClassBytes(out: File): MutableMap<String, ByteArray?> {
@@ -66,33 +82,8 @@ class RubyCompiler : JvmCompiler {
 
         processBuilder.environment().set("JAVA_TOOL_OPTIONS", "-Xmx32m -Xss512k -Dfile.encoding=UTF-8")
 
-
         var process = processBuilder.inheritIO().start()
-
         process.waitFor(60, TimeUnit.SECONDS)
-        process.destroyForcibly()
-
-        out.listFiles().filter {
-            it.absolutePath.endsWith(".java")
-        }.forEach {
-            val compileProcessBuilder = ProcessBuilder(
-                    "javac",
-                    "-d", out.absolutePath,
-                    "-cp", classPath,
-                    it.absolutePath
-            )
-
-            compileProcessBuilder.inheritIO()
-            compileProcessBuilder.environment().set("JAVA_TOOL_OPTIONS", "-Xmx32m -Xss512k -Dfile.encoding=UTF-8")
-
-            var compileProcess = compileProcessBuilder.start()
-            compileProcess.waitFor(60, TimeUnit.SECONDS)
-
-            if (compileProcess.exitValue() != 0) {
-                return processToExitCode(compileProcess)
-            }
-        }
-
         return processToExitCode(process)
     }
 
