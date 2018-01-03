@@ -4,7 +4,9 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintStream
 import java.util.*
-import java.util.concurrent.TimeUnit
+import org.jruby.javasupport.JavaEmbedUtils
+import org.jruby.Ruby
+
 
 class RubyCompiler : JvmCompiler {
     override fun programmingLanguage() = "ruby"
@@ -22,29 +24,24 @@ class RubyCompiler : JvmCompiler {
             val errMessageBytes = ByteArrayOutputStream()
             System.setErr(PrintStream(errMessageBytes))
 
-            System.out.println(Date())
             when (compileAndReturnExitCode(out, sourceFile)) {
                 ExitCode.OK -> return runWithJavaCompiler(className, out)
                 else -> throw CompileErrorException(errMessageBytes.toString("utf-8"))
             }
         } finally {
-            //tmpDir.deleteRecursively()
+            tmpDir.deleteRecursively()
             System.setErr(origErr)
         }
     }
 
     private fun runWithJavaCompiler(className: String, out: File): MutableMap<String, ByteArray?> {
-        System.out.println(Date())
-        val compiler = InMemoryJavaCompiler()
-
-
         val javaSourceFile = out.listFiles()
                 .filter { it.absolutePath.endsWith(".java") }
                 .first()
 
-
         val source = File(out, javaSourceFile.name).readText()
 
+        val compiler = InMemoryJavaCompiler()
         return compiler.run(className, source)
     }
 
@@ -62,31 +59,27 @@ class RubyCompiler : JvmCompiler {
     }
 
     private fun compileAndReturnExitCode(out: File, sourceFile: File): ExitCode {
-        val jRubyJar = File("lib/jruby-complete-9.1.14.0.jar")
+        val template = "require 'jruby/jrubyc'\n" +
+                "status = JRuby::Compiler::compile_argv(['--target', '%s', '--dir', '%s', '--java', '%s'])\n" +
+                "raise StandardError if status != 0"
 
-        val classPath = listOf(
-                jRubyJar,
-                File("build/classes/main").absolutePath,
-                File("build/resources/main").absolutePath
-        ).joinToString(File.pathSeparator)
+        val compilationCode = String.format(
+                template,
+                out.absolutePath,
+                sourceFile.parentFile.absolutePath,
+                sourceFile.absolutePath
+        )
 
+        try {
+            val runtime = Ruby.getGlobalRuntime()
+            val evaler = JavaEmbedUtils.newRuntimeAdapter()
+            evaler.eval(runtime, compilationCode)
+        } catch (e: Exception) {
+            return ExitCode.COMPILATION_ERROR
+        }
 
-        var processBuilder = ProcessBuilder(
-                "java",
-                "-jar", jRubyJar.absolutePath,
-                "-S", "jrubyc",
-                sourceFile.name,
-                "--java",
-                "-t", "out"
-        ).directory(out.parentFile)
-
-        processBuilder.environment().set("JAVA_TOOL_OPTIONS", "-Xmx32m -Xss512k -Dfile.encoding=UTF-8")
-
-        var process = processBuilder.inheritIO().start()
-        process.waitFor(60, TimeUnit.SECONDS)
-        return processToExitCode(process)
+        return ExitCode.OK
     }
-
 
     private fun processToExitCode(process: Process): ExitCode {
         return when (process.exitValue()) {
