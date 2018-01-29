@@ -65,9 +65,9 @@ class RubyCompiler : JvmCompiler {
 
         val compilationCode = String.format(
                 template,
-                out.absolutePath,
-                sourceFile.parentFile.absolutePath,
-                sourceFile.absolutePath
+                sanitizePath(out),
+                sanitizePath(sourceFile.parentFile),
+                sanitizePath(sourceFile)
         )
 
         try {
@@ -102,5 +102,9 @@ class RubyCompiler : JvmCompiler {
         val sourceFile = File(tmpDir, fileName)
         sourceFile.writeText(sourceCode)
         return sourceFile
+    }
+
+    private fun sanitizePath(file: File): String {
+        return file.absolutePath.replace("\\", "/")
     }
 }
