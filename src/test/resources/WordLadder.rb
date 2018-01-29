@@ -1,3 +1,4 @@
+
 class WordLadder
   def ladderLength(starts, ends, dict)
     result = 0
@@ -13,6 +14,8 @@ class WordLadder
   end
 
   def bfs(starts, ends, dict)
+    java.lang.System.gc # :)
+
     queue = java.util.LinkedList.new
     length = java.util.LinkedList.new
 
@@ -20,7 +23,7 @@ class WordLadder
     length.add(1)
 
     while !queue.empty?
-      word = queue.poll
+      word = queue.poll.to_java
       len = length.poll
 
       if word == ends
@@ -28,19 +31,29 @@ class WordLadder
       end
 
       word.length.times do |i|
-        ('a'..'z').each do |c|
-          next if word[i] == c
+        arr = word.to_char_array
+        (97..122).each do |c| # a..z
+          next if arr[i] == c
 
-          word[i] = c
+          arr[i] = c
 
-          if dict.contains(word)
-            queue.add(word)
+          str = java.lang.String.valueOf(arr)
+
+          if dict.contains(str)
+            queue.add(str)
             length.add(len + 1)
             dict.remove(word)
           end
+
+          str = nil
         end
       end
     end
+    0
+
+  rescue => e
+    puts e.inspect
+    puts e.backtrace
 
     0
   end

@@ -1,6 +1,6 @@
 class Solution
   def compress(str)
-    str = str.to_s
+    return str if str.to_s.empty?
     compressed = ''
     count = 0
 
@@ -8,14 +8,12 @@ class Solution
       count += 1
 
       if i + 1 >= str.length || str[i] != str[i + 1]
-        puts 'x'
         compressed += str[i]
         compressed += count.to_s
         count = 0
       end
     end
 
-    puts compressed
     compressed.length < str.length ? compressed : str
   end
 end
